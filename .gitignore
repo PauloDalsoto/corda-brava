@@ -24,3 +24,6 @@ build/
 # Playwright
 playwright-report/
 test-results/
+
+# Metrics bench output
+backend/app/metrics/results/

@@ -19,11 +19,10 @@ from __future__ import annotations
 
 import sqlite3
 from datetime import datetime
-from pathlib import Path
 
 from app.domain.entities import PullEvent
 from app.domain.enums import Team
-from app.repositories.sqlite.connection import get_connection, write_lock
+from app.repositories.sqlite.connection import SQLiteRepository, write_lock
 
 _INSERT_EVENT = """
 INSERT OR IGNORE INTO pull_events
@@ -67,7 +66,7 @@ def _event_to_params(event: PullEvent) -> dict[str, object]:
     }
 
 
-class SQLiteEventRepository:
+class SQLiteEventRepository(SQLiteRepository):
     """SQLite-backed EventRepository implementation.
 
     Thread-safety: writes serialised by write_lock; reads run freely (WAL).
@@ -75,9 +74,6 @@ class SQLiteEventRepository:
     Duplicate (match_id, batch_id): silently ignored (INSERT OR IGNORE).
     Call event_exists() when dedup detection is required.
     """
-
-    def __init__(self, db_path: str | Path) -> None:
-        self._conn = get_connection(db_path)
 
     def add_event(self, event: PullEvent) -> None:
         """Persist a PullEvent.  Duplicate (match_id, batch_id) is silently ignored."""

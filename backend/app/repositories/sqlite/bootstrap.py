@@ -88,8 +88,7 @@ CREATE INDEX IF NOT EXISTS idx_pull_events_match_ts
 def bootstrap_db(db_path: str | Path) -> sqlite3.Connection:
     """Create all tables and indexes for *db_path*.
 
-    Returns the open connection so callers can pass it to repository
-    constructors without opening a second handle.
+    Returns the calling thread's connection.
     """
     conn = get_connection(db_path)
     with write_lock():

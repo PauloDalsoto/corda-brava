@@ -11,11 +11,10 @@ from __future__ import annotations
 
 import sqlite3
 from datetime import datetime
-from pathlib import Path
 
 from app.domain.entities import Match, MatchConfig, PullEvent, TeamConfig
 from app.domain.enums import BalanceMode, EndReason, MatchResult, MatchStatus
-from app.repositories.sqlite.connection import get_connection, write_lock
+from app.repositories.sqlite.connection import SQLiteRepository, write_lock
 from app.repositories.sqlite.event_repo import _INSERT_EVENT, _event_to_params
 
 _INSERT_MATCH = """
@@ -131,15 +130,12 @@ def _update_params(match: Match) -> dict[str, object]:
     }
 
 
-class SQLiteMatchRepository:
+class SQLiteMatchRepository(SQLiteRepository):
     """SQLite-backed MatchRepository implementation.
 
     Thread-safety: all writes serialised by the module write_lock.
-    Reads execute directly on the shared connection (WAL allows concurrent reads).
+    Reads use the calling thread's own connection (WAL allows concurrent reads).
     """
-
-    def __init__(self, db_path: str | Path) -> None:
-        self._conn = get_connection(db_path)
 
     def create_match(self, match: Match) -> Match:
         """INSERT a new Match row and return the model unchanged."""

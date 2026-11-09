@@ -12,12 +12,11 @@ from __future__ import annotations
 
 import sqlite3
 from datetime import datetime
-from pathlib import Path
 
 from app.domain.entities import Player
 from app.domain.enums import Team
 from app.repositories.interfaces import UniqueConstraintError
-from app.repositories.sqlite.connection import get_connection, write_lock
+from app.repositories.sqlite.connection import SQLiteRepository, write_lock
 
 _INSERT_PLAYER = """
 INSERT INTO players (id, match_id, device_id, name, team, token, joined_at)
@@ -53,7 +52,7 @@ def _player_to_params(player: Player) -> dict[str, object]:
     }
 
 
-class SQLitePlayerRepository:
+class SQLitePlayerRepository(SQLiteRepository):
     """SQLite-backed PlayerRepository implementation.
 
     Thread-safety: writes serialised by write_lock; reads run freely (WAL).
@@ -62,9 +61,6 @@ class SQLitePlayerRepository:
     The service layer (Task 8) must call get_player_by_device first for
     idempotent-rejoin behaviour.
     """
-
-    def __init__(self, db_path: str | Path) -> None:
-        self._conn = get_connection(db_path)
 
     def add_player(self, player: Player) -> Player:
         """INSERT a new Player row.
