@@ -12,7 +12,7 @@ export default function TeamColumn({ team, players }: { team: TeamId; players: R
         <h2>{NAMES[team]}</h2>
         <p className="team-count">{players.length} {players.length === 1 ? "jogador" : "jogadores"}</p>
       </header>
-      <div className="team-roster">
+      <div className={`team-roster${players.length > 12 ? " many" : ""}`}>
         {players.map((p) => <PlayerIcon key={p.id} name={p.name} team={team} />)}
       </div>
     </section>

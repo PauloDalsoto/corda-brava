@@ -43,3 +43,9 @@
 .qr-panel .qr-btn svg { width: min(240px, 32vh); height: auto; }
 .qr-panel .join-url { font-size: 11px; max-width: 260px; }
 .host-page.lobby { padding-block: var(--sp-md); }
+/* Keep INICIAR PARTIDA on screen with 60 players: compact tiles + rosters scroll inside their panel */
+.team-roster { max-height: max(150px, calc(100vh - 460px)); overflow-y: auto; scrollbar-width: thin; }
+.team-roster.many { gap: var(--sp-sm); }
+.team-roster.many .player-icon { max-width: 76px; font-size: 10px; }
+.team-roster.many .player-icon-name { max-width: 76px; }
+.team-roster.many .player-icon-block { width: 32px; height: 32px; }

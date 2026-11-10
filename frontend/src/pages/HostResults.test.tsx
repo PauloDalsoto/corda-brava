@@ -67,3 +67,9 @@ it("shows the MVP of each team with pulls", async () => {
   expect(mvps[0]).toContain("40 puxadas");
   expect(mvps[1]).toContain("Beto");
 });
+
+it("final rope is shown as a rounded integer", async () => {
+  const h = await render("INTER", { ...analytics("INTER"), finalRope: -7.7333333333333325 });
+  expect(h.textContent).toContain("-8");
+  expect(h.textContent).not.toContain("7.73");
+});

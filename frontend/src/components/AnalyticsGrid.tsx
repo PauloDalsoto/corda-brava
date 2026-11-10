@@ -33,7 +33,7 @@ export default function AnalyticsGrid({ a }: { a: AnalyticsPayload }) {
         <Tile icon="rope-coil" label="Puxadas totais" value={a.totalPulls.overall} />
         <Tile icon="hourglass" label="Duração" value={`${a.durationS}s`} />
         <Tile icon="lightning" label="Pico" value={`${a.peak.value}/s aos ${a.peak.t}s`} />
-        <Tile icon={flag} label="Corda final" value={a.finalRope} />
+        <Tile icon={flag} label="Corda final" value={Math.round(a.finalRope)} />
       </div>
       <div className="team-cards">
         {TEAMS.map((t) => (
