@@ -272,3 +272,9 @@ P7: implemented (commit c3bc36c; report 716e4ee; vitest 80, tsc/lint/build; play
 P7: complete.
 
 ## POLISH PHASE COMPLETE (P1–P7 + rope fix). Backend 205 + 6 skipped; frontend 80; E2E green. README GIF re-recorded (match screen with HUD + feed); GIF script pulls smaller counts so the match lasts the clip.
+
+## 60-PLAYER LOAD TEST (2026-11-10, owner request)
+Run locally (dev stack, in-memory queue) with 60 simulated phones (30/30, pulls every 500 ms + /me every 1 s) plus 1 real phone tab.
+Found + fixed: (1) CRITICAL SQLite race — reads on the shared connection were unlocked; concurrent /me threads produced 500s + corrupted rows -> all reads via locked read() helper, RLock (e82e334, concurrency test failed 5/5 before). (2) 12 pulls answered 202 after ends_at but never applied -> /pulls returns 409 once ends_at passed (1affff6). (3) UI: feed overlapped rope -> moved below rope with bounded height; HUD clipped on narrow screens; final rope raw float -> rounded; lobby start button below fold at 720p with 60 players -> compact tiles + scrolling rosters (abc46fd).
+Not a bug: the earlier 500 ms+ pull latency was the single-process load client saturating one core (profiled: server mostly idle, loop lag p95 6 ms).
+Final run through the Vite proxy: ~115 pulls/s + ~63 /me/s, pull p50 47 ms / p95 156 ms / max 313 ms, 0 errors, accepted == recorded (26,920 pulls). Real phone: 130 taps -> 130 recorded. Backend 207 + 6 skipped, frontend 81, E2E green.
