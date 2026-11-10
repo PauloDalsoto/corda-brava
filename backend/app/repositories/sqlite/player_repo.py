@@ -17,7 +17,7 @@ from pathlib import Path
 from app.domain.entities import Player
 from app.domain.enums import Team
 from app.repositories.interfaces import UniqueConstraintError
-from app.repositories.sqlite.connection import get_connection, write_lock
+from app.repositories.sqlite.connection import get_connection, read, write_lock
 
 _INSERT_PLAYER = """
 INSERT INTO players (id, match_id, device_id, name, team, token, joined_at)
@@ -86,19 +86,15 @@ class SQLitePlayerRepository:
 
     def get_player(self, player_id: str) -> Player | None:
         """Return the Player by primary key, or None."""
-        row = self._conn.execute(_SELECT_PLAYER_BY_ID, (player_id,)).fetchone()
-        if row is None:
-            return None
-        return _row_to_player(row)
+        rows = read(self._conn, _SELECT_PLAYER_BY_ID, (player_id,))
+        return _row_to_player(rows[0]) if rows else None
 
     def get_player_by_device(self, match_id: str, device_id: str) -> Player | None:
         """Return the Player for (match_id, device_id), or None."""
-        row = self._conn.execute(_SELECT_PLAYER_BY_DEVICE, (match_id, device_id)).fetchone()
-        if row is None:
-            return None
-        return _row_to_player(row)
+        rows = read(self._conn, _SELECT_PLAYER_BY_DEVICE, (match_id, device_id))
+        return _row_to_player(rows[0]) if rows else None
 
     def list_players(self, match_id: str) -> list[Player]:
         """Return all Players for the given match."""
-        rows = self._conn.execute(_LIST_PLAYERS, (match_id,)).fetchall()
+        rows = read(self._conn, _LIST_PLAYERS, (match_id,))
         return [_row_to_player(r) for r in rows]

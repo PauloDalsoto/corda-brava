@@ -23,7 +23,7 @@ from pathlib import Path
 
 from app.domain.entities import PullEvent
 from app.domain.enums import Team
-from app.repositories.sqlite.connection import get_connection, write_lock
+from app.repositories.sqlite.connection import get_connection, read, write_lock
 
 _INSERT_EVENT = """
 INSERT OR IGNORE INTO pull_events
@@ -70,7 +70,7 @@ def _event_to_params(event: PullEvent) -> dict[str, object]:
 class SQLiteEventRepository:
     """SQLite-backed EventRepository implementation.
 
-    Thread-safety: writes serialised by write_lock; reads run freely (WAL).
+    Thread-safety: all statements (reads too) serialised on the shared connection.
 
     Duplicate (match_id, batch_id): silently ignored (INSERT OR IGNORE).
     Call event_exists() when dedup detection is required.
@@ -88,10 +88,9 @@ class SQLiteEventRepository:
 
     def event_exists(self, match_id: str, batch_id: str) -> bool:
         """Return True if (match_id, batch_id) is already stored."""
-        row = self._conn.execute(_EXISTS_EVENT, (match_id, batch_id)).fetchone()
-        return row is not None
+        return bool(read(self._conn, _EXISTS_EVENT, (match_id, batch_id)))
 
     def list_events(self, match_id: str) -> list[PullEvent]:
         """Return all PullEvents for the match, ordered by server_ts ascending."""
-        rows = self._conn.execute(_LIST_EVENTS, (match_id,)).fetchall()
+        rows = read(self._conn, _LIST_EVENTS, (match_id,))
         return [_row_to_event(r) for r in rows]

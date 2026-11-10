@@ -15,7 +15,7 @@ from pathlib import Path
 
 from app.domain.entities import Match, MatchConfig, PullEvent, TeamConfig
 from app.domain.enums import BalanceMode, EndReason, MatchResult, MatchStatus
-from app.repositories.sqlite.connection import get_connection, write_lock
+from app.repositories.sqlite.connection import get_connection, read, write_lock
 from app.repositories.sqlite.event_repo import _INSERT_EVENT, _event_to_params
 
 _INSERT_MATCH = """
@@ -134,8 +134,7 @@ def _update_params(match: Match) -> dict[str, object]:
 class SQLiteMatchRepository:
     """SQLite-backed MatchRepository implementation.
 
-    Thread-safety: all writes serialised by the module write_lock.
-    Reads execute directly on the shared connection (WAL allows concurrent reads).
+    Thread-safety: every statement on the shared connection (reads too) holds the module lock.
     """
 
     def __init__(self, db_path: str | Path) -> None:
@@ -151,13 +150,11 @@ class SQLiteMatchRepository:
 
     def get_match(self, match_id: str) -> Match | None:
         """SELECT and deserialise a Match, or return None."""
-        row = self._conn.execute(_SELECT_MATCH, (match_id,)).fetchone()
-        if row is None:
-            return None
-        return _row_to_match(row)
+        rows = read(self._conn, _SELECT_MATCH, (match_id,))
+        return _row_to_match(rows[0]) if rows else None
 
     def list_running(self) -> list[Match]:
-        rows = self._conn.execute("SELECT * FROM matches WHERE status = 'running'").fetchall()
+        rows = read(self._conn, "SELECT * FROM matches WHERE status = 'running'")
         return [_row_to_match(r) for r in rows]
 
     def update_match(self, match: Match) -> Match:
