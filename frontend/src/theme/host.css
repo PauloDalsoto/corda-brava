@@ -49,3 +49,19 @@
 .team-roster.many .player-icon { max-width: 76px; font-size: 10px; }
 .team-roster.many .player-icon-name { max-width: 76px; }
 .team-roster.many .player-icon-block { width: 32px; height: 32px; }
+
+/* QR modal */
+.qr-overlay { position: fixed; inset: 0; z-index: calc(var(--z-toast) + 1); display: grid; place-items: center; padding: var(--sp-md); overflow: auto; background: #050818cc; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); cursor: zoom-out; outline: none; animation: cb-qr-fade 0.2s ease-out; }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .qr-overlay { background: #050818f2; } }
+.qr-card { cursor: default; filter: drop-shadow(0 0 16px #ffe27a66) drop-shadow(0 0 4px var(--gold)); animation: cb-qr-pop 0.25s steps(5) both; max-width: 100%; }
+.qr-overlay .qr-card-panel { position: relative; display: flex; flex-direction: column; align-items: center; gap: var(--sp-md); padding: calc(var(--sp-lg) + 8px) var(--sp-lg) var(--sp-lg); background: #0a0c22f2; box-shadow: inset 0 0 0 4px var(--gold), inset 0 0 0 8px #0a0c22, inset 0 0 0 10px #2c3778; }
+.qr-modal-title { margin: 0; font-size: clamp(14px, 3.4vw, 24px); text-align: center; }
+.qr-tile { background: #fff; padding: 8px; box-shadow: 0 0 0 4px var(--gold), 0 0 0 8px var(--ink); margin: 8px; line-height: 0; }
+.qr-tile svg { display: block; width: min(54vmin, 520px); height: auto; }
+.qr-hint { color: #9aa3d6; font-size: 9px; text-align: center; }
+.qr-close { position: absolute; top: 12px; right: 12px; min-height: 40px; min-width: 40px; padding: 4px 8px; font-size: 14px; }
+@keyframes cb-qr-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes cb-qr-pop { from { transform: scale(0.85); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .qr-overlay, .qr-card, .qr-modal-title { animation: none !important; } }
+.qr-overlay .qr-modal-title { padding-inline: 64px; line-height: 1.4; font-size: clamp(12px, 3vw, 22px); }
+.qr-overlay .qr-close { top: 18px; right: 18px; width: 44px; height: 44px; min-width: 44px; min-height: 44px; padding: 0; display: grid; place-items: center; line-height: 1; font-size: 18px; }

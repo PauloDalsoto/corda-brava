@@ -95,7 +95,6 @@ canvas {
 .host-page select { font: inherit; padding: var(--sp-md); background: #0a0c22; color: var(--text); border: 4px solid #4a58a0; border-radius: 0; }
 .host-page.center { justify-content: center; }
 .qr-btn { padding: var(--sp-md); background: #fff; border: 0; cursor: zoom-in; line-height: 0; }
-.qr-overlay { position: fixed; inset: 0; z-index: calc(var(--z-toast) + 1); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--sp-lg); background: #fff; color: #000; cursor: zoom-out; }
 .join-url { font-size: 14px; color: #cdd3e2; word-break: break-all; }
 .lobby-teams { display: flex; gap: var(--sp-xl); width: 100%; justify-content: center; align-items: flex-start; }
 .team-column { flex: 1; max-width: 560px; padding: var(--sp-lg); border-top: 8px solid var(--inter); display: flex; flex-direction: column; align-items: center; gap: var(--sp-md); }

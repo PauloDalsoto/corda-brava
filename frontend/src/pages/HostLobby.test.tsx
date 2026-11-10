@@ -12,7 +12,7 @@ beforeEach(() => {
   sessionStorage.setItem("cb.hostToken", "T");
 });
 
-it("QR overlay shows the snapshot joinUrl", async () => {
+it("QR overlay shows only the QR (joinUrl stays on the lobby)", async () => {
   const match = { id: "m1", status: "LOBBY", roster: { inter: [], gremio: [] }, joinUrl: "http://lan:5173/j/m1" };
   vi.spyOn(sock, "useHostSocket").mockReturnValue({
     status: "LOBBY", snapshot: match as never, lastTick: null, ended: null, terminal: null, connected: true, authError: false,
@@ -32,7 +32,18 @@ it("QR overlay shows the snapshot joinUrl", async () => {
   await act(async () => host.querySelector<HTMLButtonElement>(".qr-btn")!.click());
   const overlay = document.body.querySelector(".qr-overlay");
   expect(overlay?.parentElement).toBe(document.body);
-  expect(overlay?.textContent).toContain("http://lan:5173/j/m1");
+  expect(overlay?.textContent).not.toContain("http://lan:5173/j/m1");
+  expect(overlay?.querySelector("svg")).not.toBeNull();
+
+  const click = (el: Element | null) => act(async () => (el as HTMLElement).click());
+  await click(document.querySelector(".qr-card"));
+  expect(document.querySelector(".qr-overlay")).not.toBeNull();
+  await click(document.querySelector(".qr-overlay"));
+  expect(document.querySelector(".qr-overlay")).toBeNull();
+
+  await click(host.querySelector(".qr-btn"));
+  await click(document.querySelector('[aria-label="Fechar"]'));
+  expect(document.querySelector(".qr-overlay")).toBeNull();
 });
 
 async function mountLobby(roster: { inter: unknown[]; gremio: unknown[] }) {
