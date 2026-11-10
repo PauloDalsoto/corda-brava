@@ -6,6 +6,7 @@ import asyncio
 import logging
 import time
 import uuid
+from datetime import UTC, datetime
 from functools import partial
 
 from fastapi import APIRouter, HTTPException
@@ -124,12 +125,17 @@ async def pulls(match_id: str, body: PullRequest, c: ContainerDep) -> PullAccept
     m = _match(c, match_id)
     if m.status is not MatchStatus.RUNNING:
         raise ConflictError(NOT_RUNNING_DETAIL)
+    # Past ends_at the final receive may be done: a 202 must mean "will be counted".
+    if m.ends_at is not None and datetime.now(UTC) >= m.ends_at:
+        raise ConflictError(NOT_RUNNING_DETAIL)
     if body.count < 1:
         raise HTTPException(status_code=422, detail="count deve ser >= 1")
     count = min(body.count, c.settings.MAX_PULLS_PER_BATCH)
     now = time.monotonic()
-    for k in [k for k, exp in c.seen_batches.items() if exp <= now]:
-        del c.seen_batches[k]
+    if now - c.seen_pruned_at >= 1.0:  # amortized: the O(n) scan runs at most once a second
+        c.seen_pruned_at = now
+        for k in [k for k, exp in c.seen_batches.items() if exp <= now]:
+            del c.seen_batches[k]
     key = f"{match_id}:{body.batchId}"
     if key in c.seen_batches:
         return PullAccepted(accepted=count)

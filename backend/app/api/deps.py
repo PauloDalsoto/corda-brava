@@ -34,6 +34,7 @@ class Container:
     service: MatchService
     # shortcut: per-process batchId->expiry (monotonic); swap for Redis when scaled out
     seen_batches: dict[str, float] = field(default_factory=dict)
+    seen_pruned_at: float = 0.0
     # enqueues still in flight, by the same key: a resend that arrives meanwhile awaits this
     inflight_batches: dict[str, asyncio.Task[None]] = field(default_factory=dict)
     # shortcut: per-process failed-login timestamps by client IP; use a shared store when scaled out

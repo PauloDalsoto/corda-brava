@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import httpx
@@ -10,6 +11,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.api.deps import get_container
+from app.api.player import NOT_RUNNING_DETAIL
 from app.core.app_factory import create_app
 from app.core.settings import Settings
 from app.domain.enums import EndReason, MatchResult, MatchStatus
@@ -181,6 +183,19 @@ def test_pull_not_running_409(ctx, status) -> None:
     _set(c, mid, status, MatchResult.DRAW if status is MatchStatus.FINISHED else None)
     r = _pull(client, mid, j)
     assert r.status_code == 409 and "partida" in r.json()["detail"]
+
+
+def test_pull_after_ends_at_is_409_and_not_enqueued(ctx) -> None:
+    client, c, mid, j = ctx
+    _set(c, mid, MatchStatus.RUNNING)
+    m = c.matches.get_match(mid)
+    m.ends_at = datetime.now(UTC) - timedelta(seconds=1)  # timer expired, consumer not yet finished
+    c.matches.update_match(m)
+    r = _pull(client, mid, j)
+    assert r.status_code == 409 and r.json()["detail"] == NOT_RUNNING_DETAIL
+    m.ends_at = datetime.now(UTC) + timedelta(seconds=30)
+    c.matches.update_match(m)
+    assert _pull(client, mid, j).status_code == 202
 
 
 def test_bad_token_401_and_mismatch_403(ctx) -> None:
