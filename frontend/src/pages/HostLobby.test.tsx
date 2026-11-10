@@ -30,7 +30,9 @@ it("QR overlay shows the snapshot joinUrl", async () => {
   );
   expect(host.querySelector(".join-url")?.textContent).toBe("http://lan:5173/j/m1");
   await act(async () => host.querySelector<HTMLButtonElement>(".qr-btn")!.click());
-  expect(host.querySelector(".qr-overlay")?.textContent).toContain("http://lan:5173/j/m1");
+  const overlay = document.body.querySelector(".qr-overlay");
+  expect(overlay?.parentElement).toBe(document.body);
+  expect(overlay?.textContent).toContain("http://lan:5173/j/m1");
 });
 
 async function mountLobby(roster: { inter: unknown[]; gremio: unknown[] }) {
